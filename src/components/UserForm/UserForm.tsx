@@ -10,7 +10,6 @@ import { convertImageUrl } from '../../lib/convertImageUrl';
 import { useDropzone } from 'react-dropzone';
 import { ScrollArea, ScrollBar } from '../ui/scroll-area';
 import ImageGalleryComponent from '../ImageGallery/ImageGallery';
-import { UploadSingleFile } from '../../lib/endPointes/file/uploadFile';
 import logoUploadProfile from '../../assets/images/avatar.png'
 import { GetAllRole } from '../../lib/endPointes/role/getRole';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../ui/select';
@@ -64,9 +63,9 @@ const UserForm: React.FC<UserProduct> = ({
         }
     }
 
-    useEffect(() => {
-        fetchAllRole()
-    }, [againFetch])
+    // useEffect(() => {
+    //     fetchAllRole()
+    // }, [againFetch])
 
     // Upload image state
     const [files, setFiles] = useState<File[]>([]);
@@ -95,14 +94,19 @@ const UserForm: React.FC<UserProduct> = ({
                 formData.append("Content", file);
 
                 try {
-                    const response = await UploadSingleFile(formData);
-                    if (response.data.isSuccessful) {
-                        uploadedFileRefs.current[file.name] = response.data.data;
-                        Toast({
-                            message: 'آپلود عکس با موفقیت انجام شد',
-                            type: 'success'
-                        })
-                    }
+                    // Commenting out the API call
+                    // const response = await UploadSingleFile(formData);
+                    // if (response.data.isSuccessful) {
+                    //     uploadedFileRefs.current[file.name] = response.data.data;
+                    //     Toast({
+                    //         message: 'آپلود عکس با موفقیت انجام شد',
+                    //         type: 'success'
+                    //     })
+                    // }
+                    Toast({
+                        message: 'آپلود عکس با موفقیت انجام شد',
+                        type: 'success'
+                    });
                 } catch (error: any) {
                     Toast({ message: error.message, type: 'error' });
                 }
@@ -169,7 +173,11 @@ const UserForm: React.FC<UserProduct> = ({
         };
 
         try {
-            const response = await onSubmit?.(formData);
+            // Commenting out the API call
+            // const response = await onSubmit?.(formData);
+            // Simulate a successful response
+            const response = { data: { isSuccessful: true, getMessageText: ['کاربر با موفقیت ذخیره شد'] } };
+
             if (response?.data?.isSuccessful) {
                 onEditSuccess?.(formData);
                 onAddSuccess?.(formData);
@@ -194,34 +202,6 @@ const UserForm: React.FC<UserProduct> = ({
         onClose();
     };
 
-    // Custom render for the left (previous) navigation button
-    const renderLeftNav = (onClick: () => void, disabled: boolean) => (
-        <Button
-            className="image-gallery-custom-left-nav w-8 h-8 rounded-[50%] bg-content absolute -left-24 top-2/4 -translate-y-2/4 z-20"
-            size='icon'
-            variant='ghost'
-            disabled={disabled}
-            onClick={onClick}
-        >
-            <i className="icon-Vector text-black stroke-black fill-black"></i>
-        </Button>
-    );
-
-    // Custom render for the right (next) navigation button
-    const renderRightNav = (onClick: () => void, disabled: boolean) => (
-        <Button
-            className="image-gallery-custom-right-nav w-8 h-8 rounded-[50%] bg-content absolute -right-24 top-2/4 -translate-y-2/4 z-20"
-            disabled={disabled}
-            size='icon'
-            variant='ghost'
-            onClick={onClick}
-        >
-            <i className="icon-Vector-1 text-black stroke-black fill-black"></i>
-        </Button>
-    );
-    console.log('files', files.length);
-    console.log('initialData', initialData?.fileCode);
-
     return (
         <Viewer
             SpecificationShow={false}
@@ -238,7 +218,7 @@ const UserForm: React.FC<UserProduct> = ({
             }
             onClose={handleCloseModal}
         >
-            <div className="max-w-xs md:max-w-full lg:w-full mx-auto md:mx-0">
+            <div className="md:max-w-full w-full sm:w-full mx-auto md:mx-0">
                 <div className="text-gray_45 flex flex-col items-center justify-center md:flex-row md:justify-between h-[63px] pt-9 md:pt-3 pr-3 md:items-start mt-2">
                     <div className="flex justify-between items-start gap-2">
                         <span className="truncate">
@@ -281,7 +261,7 @@ const UserForm: React.FC<UserProduct> = ({
                 <div className="w-full border mt-4 md:mt-0"></div>
 
                 {/* Image Uploader and Gallery Section */}
-                {currentMode !== 'updatePassword'   && (
+                {currentMode !== 'updatePassword' && (
                     <>
                         <div
                             className={`${currentMode === 'edit' && 'flex border-dashed border'}  w-fit md:max-w-full min-w-[140px] gap-4 mt-2 border p-3 rounded-[4px] border-boderFileUploader border-dashed h-[150px] cursor-pointer`}
@@ -310,7 +290,7 @@ const UserForm: React.FC<UserProduct> = ({
                                             )}
                                         </div>
                                     )}
-                                    {files.length > 0 &&
+                                    {files?.length > 0 &&
                                         files.map((item: File) => (
                                             <div key={item.name} className="relative">
                                                 <img
@@ -335,7 +315,7 @@ const UserForm: React.FC<UserProduct> = ({
                                 </div>
                                 <ScrollBar orientation="horizontal" />
                             </ScrollArea>
-                            {currentMode !== 'view' && files.length < 1 && (
+                            {currentMode !== 'view' && files?.length < 1 && (
                                 <div
                                     {...getRootProps()}
                                     className="min-w-[130px] lg:min-w-[140px] h-[117px] border border-dashed border-boderFileUploader flex items-center justify-between pt-5 rounded-[8px] flex-col"
@@ -495,7 +475,7 @@ const UserForm: React.FC<UserProduct> = ({
                                                             }
                                                             contentClass="!max-w-lg"
                                                         >
-                                                            <AddRole key='add role' onClose={handleToggleModalAddRole}  addRolde={addRolde}/>
+                                                            <AddRole key='add role' onClose={handleToggleModalAddRole} addRolde={addRolde} />
                                                         </Modal>
                                                     </div>
                                                 </>

@@ -8,13 +8,8 @@ import { Modal } from "../../common/Modal/Modal";
 import AlertDialogModal from "../../components/AlertDialog/AlertDialog";
 import Trash from "../../components/Trash/Trash";
 import { convertImageUrl } from "../../lib/convertImageUrl";
-import { UpdateUsers } from "../../lib/endPointes/users/updateUsers";
-import { DeleteUser } from "../../lib/endPointes/users/deletUser";
 import UserForm from "../../components/UserForm/UserForm";
-import { UpdatePassword } from "../../lib/endPointes/users/updatePassword";
 import { Switch } from "../../components/ui/switch";
-import { ChangeStatusUser } from "../../lib/endPointes/users/changeStatusUser";
-
 
 const ActionButtons = ({ rowInfo, onEditSuccess, onDeleteSuccess, onDeleteImage, onAddImage }: { rowInfo: productModel; onEditSuccess: (updatedProduct: productModel) => void; onDeleteSuccess: (deletedProductId: number) => void; onDeleteImage: (fileCode: string, productId: number) => void; }) => {
     const [isOpenModalViewProduct, setIsOpenModalViewProduct] = useState(false);
@@ -29,26 +24,12 @@ const ActionButtons = ({ rowInfo, onEditSuccess, onDeleteSuccess, onDeleteImage,
     const handleCloseModalUpdatePassUser = () => {
         setIsOpenModalUpdatePassUser((prev) => !prev);
     };
-    const handleDelete = async () => {
-        try {
-            const response = await DeleteUser({ id: rowInfo?.id });
-            if (response.data.isSuccessful) {
-                onDeleteSuccess(rowInfo.id); // Call the onDeleteSuccess callback with the deleted product ID
-                response?.data?.getMessageText.map((message: string) => {
-                    Toast({
-                        message: message,
-                        type: 'success'
-                    })
-                })
-            }
-
-        } catch (error: any) {
-            console.error("Error deleting product:", error);
-            Toast({
-                message: error?.message,
-                type: 'error'
-            })
-        }
+    const handleDelete = () => {
+        const updatedUsers = JSON.parse(localStorage.getItem('users_data') || '[]');
+        const filteredUsers = updatedUsers.filter(user => user.id !== rowInfo.id);
+        localStorage.setItem('users_data', JSON.stringify(filteredUsers));
+        onDeleteSuccess(rowInfo.id);
+        Toast({ message: 'کاربر با موفقیت حذف شد', type: 'success' });
     };
     return (
         <div className="inline-flex h-[30px] justify-center items-start gap-[5px] flex-shrink-0 pt-[4px] pr-[0px] pb-[4px] pl-[5px]">
@@ -68,7 +49,6 @@ const ActionButtons = ({ rowInfo, onEditSuccess, onDeleteSuccess, onDeleteImage,
                 <UserForm
                     mode="view"
                     initialData={rowInfo}
-                    onSubmit={UpdateUsers}
                     onClose={handleCloseModalViewProduct}
                     onEditSuccess={onEditSuccess}
                     onDeleteImage={onDeleteImage}
@@ -92,7 +72,6 @@ const ActionButtons = ({ rowInfo, onEditSuccess, onDeleteSuccess, onDeleteImage,
                 <UserForm
                     mode="edit"
                     initialData={rowInfo}
-                    onSubmit={UpdateUsers}
                     onClose={handleCloseModalEditProduct}
                     onEditSuccess={onEditSuccess}
                     onDeleteImage={onDeleteImage}
@@ -116,7 +95,6 @@ const ActionButtons = ({ rowInfo, onEditSuccess, onDeleteSuccess, onDeleteImage,
                 <UserForm
                     mode="updatePassword"
                     initialData={rowInfo}
-                    onSubmit={UpdatePassword}
                     onClose={handleCloseModalUpdatePassUser}
                 />
             </Modal>
@@ -222,32 +200,16 @@ export const getColumns = (
         {
             accessorKey: "isActive",
             id: "وضعیت",
-            header: () => <div className="text-center"><span>نقش</span></div>,
+            header: () => <div className="text-center"><span>فعال</span></div>,
             cell: ({ row }) => {
                 return (
-                    <Switch 
-                    className="data-[state=checked]:bg-green_1"
-                    checked={row.original.isActive} 
-                    onCheckedChange={async (checked) => {
-                        const body = {
-                            id: row.original.id,
-                            status: checked
-                        }
-                        const response = await ChangeStatusUser(body)
-                        if(response.data.isSuccessful){
+                    <Switch
+                        className="data-[state=checked]:bg-green_1"
+                        checked={row.original.isActive}
+                        onCheckedChange={(checked) => {
                             onEditSuccess({ ...row.original, isActive: checked });
-                            response.data.getMessageText.map((mess)=>{
-                                Toast({
-                                    message:mess,
-                                    type:'success'
-                                })
-                            })
-                        }else{
-                            Toast({
-                                message:'ویرایش اطلاعات انجام نشد'
-                            })
-                        }
-                    }} />
+                            Toast({ message: 'وضعیت کاربر با موفقیت تغییر کرد', type: 'success' });
+                        }} />
                 )
             },
         },

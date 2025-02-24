@@ -4,103 +4,117 @@ import { getColumns } from "./column";
 import { productModel } from "./types";
 import { Modal } from "../../common/Modal/Modal";
 import { Button } from "../../components/ui/button";
-import { GetAllUsers } from "../../lib/endPointes/users/getAllUsers";
-import { CreateUser } from '../../lib/endPointes/users/createUser'
 import UserForm from "../../components/UserForm/UserForm";
-import { _getVisibleLeafColumns } from "@tanstack/react-table";
+
+const USERS_STORAGE_KEY = 'users_data';
 
 const Users = () => {
     const [Users, setUsers] = useState<productModel[]>([]);
     const [IsLoading, setIsLoading] = useState(false);
-    const [IsModalAddUsersOpen, setIsModalAddUsersOpen] = useState(false) //track for modal create Users
-    //fetch users 
-    const fetchUser = async () => {
+    const [IsModalAddUsersOpen, setIsModalAddUsersOpen] = useState(false);
+
+    // Load users from localStorage
+    const loadUsers = () => {
         try {
             setIsLoading(true);
-            const response = await GetAllUsers();
-            setIsLoading(false);
-            const apiData = response.data.data;
-            if (Array.isArray(apiData?.data)) {
-                setUsers(apiData.data);
-
-            } else {
-                setUsers([]);
-                console.error("Unexpected API response format:", apiData);
+            const storedUsers = localStorage.getItem(USERS_STORAGE_KEY);
+            if (storedUsers) {
+                setUsers(JSON.parse(storedUsers));
             }
         } catch (error) {
-            console.error("Error fetching Users:", error);
+            console.error("Error loading users from localStorage:", error);
+        } finally {
             setIsLoading(false);
         }
     };
-    useEffect(() => {
-        fetchUser()
-    }, [])
 
-    //funCtion for add users
-    const addUser = (newUser) => {
-        // setUsers((previous)=> [...previous , newUser])
-        fetchUser()
-    }
-    //handle for edite users
-    const handleEditSuccess = (updatedProduct: productModel) => {
-        setUsers((prevUsers) =>
-            prevUsers.map((product) =>
-                product.id === updatedProduct.id ? updatedProduct : product
-            )
-        );
+    // Save users to localStorage
+    const saveUsers = (updatedUsers: productModel[]) => {
+        try {
+            localStorage.setItem(USERS_STORAGE_KEY, JSON.stringify(updatedUsers));
+        } catch (error) {
+            console.error("Error saving users to localStorage:", error);
+        }
     };
 
-    // Handle delete success
+    useEffect(() => {
+        loadUsers();
+    }, []);
+
+    const addUser = (newUser: productModel) => {
+        const updatedUsers = [...Users, { ...newUser, id: Date.now() }];
+        setUsers(updatedUsers);
+        saveUsers(updatedUsers);
+    };
+
+    const handleEditSuccess = (updatedUser: productModel) => {
+        const updatedUsers = Users.map((user) => {
+            return user.id === updatedUser.id ? updatedUser : user
+        });
+        setUsers(updatedUsers);
+        saveUsers(updatedUsers);
+    };
+
     const handleDeleteSuccess = (deletedUserId: number) => {
-        setUsers((prevUsers) =>
-            prevUsers.filter((user) => user.id !== deletedUserId)
-        );
+        const updatedUsers = Users.filter((user) => user.id !== deletedUserId);
+        setUsers(updatedUsers);
+        saveUsers(updatedUsers);
     };
 
     const handleDeletePicture = (fileCode: any, productId: any) => {
-        setUsers((preUsers) =>
-            preUsers.map((product) =>
-                product.id === productId
-                    ? {
-                        ...product,
-                        productImages: product.productImages.filter((img: any) => img.fileCode !== fileCode),
-                    }
-                    : product
-            )
+        const updatedUsers = Users.map((product) =>
+            product.id === productId
+                ? {
+                    ...product,
+                    productImages: product.productImages.filter((img: any) => img.fileCode !== fileCode),
+                }
+                : product
         );
+        setUsers(updatedUsers);
+        saveUsers(updatedUsers);
     };
 
     const handleAddImage = (fileCode: any, productId: any) => {
-        setUsers((preUsers) =>
-            preUsers.map((product) =>
-                product.id === productId
-                    ? {
-                        ...product,
-                        productImages: [...product.productImages, { fileCode: fileCode, isMain: false }],
-                    }
-                    : product
-            )
+        const updatedUsers = Users.map((product) =>
+            product.id === productId
+                ? {
+                    ...product,
+                    productImages: [...product.productImages, { fileCode: fileCode, isMain: false }],
+                }
+                : product
         );
+        setUsers(updatedUsers);
+        saveUsers(updatedUsers);
     };
 
-    const columns = useMemo(() => getColumns(handleEditSuccess, handleDeleteSuccess, handleDeletePicture, handleAddImage,), []);
+    const handleCreateUser = async (userData: any) => {
+        // Simulate API call
+        return new Promise((resolve) => {
+            setTimeout(() => {
+                const newUser = {
+                    ...userData,
+                    id: Date.now(),
+                    productImages: []
+                };
+                addUser(newUser);
+                resolve({ success: true, data: newUser });
+            }, 500);
+        });
+    };
+
+    const columns = getColumns(handleEditSuccess, handleDeleteSuccess, handleDeletePicture, handleAddImage);
     const data = useMemo(() => Users, [Users]);
 
-    //handle for modal add Users
     const handleOpenModalUsers = () => {
-        setIsModalAddUsersOpen(!IsModalAddUsersOpen)
-    }
+        setIsModalAddUsersOpen(!IsModalAddUsersOpen);
+    };
 
     return (
-        <div className="flex gap-4 justify-center items-center h-full    relative">
-
-            {/* Right side: Table and profile info */}
+        <div className="flex gap-4 justify-center items-center h-full relative">
             <div className="w-full h-full bg-white rounded-[15px] border">
-                <div className="bg-content h-full flex flex-col gap-2 rounded-[15px] ">
-                    <div
-                        className='flex justify-between lg:flex-row gap-5 items-start lg:items-center pr-5 pl-2 flex-wrap pt-6'
-                    >
-                        <div className="grid grid-cols-2 gap-6 items-center justify-between w-full  ">
+                <div className="bg-content h-full flex flex-col gap-2 rounded-[15px]">
+                    <div className='flex justify-between lg:flex-row gap-5 items-start lg:items-center pr-5 pl-2 flex-wrap pt-6'>
+                        <div className="grid grid-cols-2 gap-6 items-center justify-between w-full">
                             <div className="">
                                 <p className="text-gray_45 text-[18px]">نام کاربری</p>
                             </div>
@@ -109,8 +123,8 @@ const Users = () => {
                                     isOpen={IsModalAddUsersOpen}
                                     onClose={handleOpenModalUsers}
                                     trigger={
-                                        <Button className=' ml-[8px] self-center w-[107px]  rounded-[5px] h-[41px] flex justify-center items-end flex-shrink-0 bg-blue_5 hover:bg-blue_5 '>
-                                            <div >
+                                        <Button className='ml-[8px] self-center w-[107px] rounded-[5px] h-[41px] flex justify-center items-end flex-shrink-0 bg-blue_5 hover:bg-blue_5'>
+                                            <div>
                                                 <span className='text-white text-[14px] font-[400] leading-[21px] h-[30px] w-[69px]'>+ کاربر جدید</span>
                                             </div>
                                         </Button>
@@ -118,13 +132,12 @@ const Users = () => {
                                 >
                                     <UserForm
                                         mode="add"
-                                        onSubmit={CreateUser}
+                                        onSubmit={handleCreateUser}
                                         onClose={handleOpenModalUsers}
                                         onAddSuccess={addUser}
                                     />
                                 </Modal>
                             </div>
-
                         </div>
                     </div>
                     <div className="font-Poppins mt-0">
@@ -137,5 +150,3 @@ const Users = () => {
 };
 
 export default Users;
-
-

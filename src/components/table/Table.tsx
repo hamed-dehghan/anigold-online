@@ -201,7 +201,7 @@ export function DataTable({ columns, data, IsLoading }: any) {
               ))
             ) : IsLoading ? (
               <TableRow>
-                <TableCell colSpan={columns.length} className="h-24 text-center ">
+                <TableCell colSpan={columns?.length} className="h-24 text-center ">
                   <div className="w-full h-full flex justify-center items-center">
                     <Spinner />
                   </div>
@@ -209,7 +209,7 @@ export function DataTable({ columns, data, IsLoading }: any) {
               </TableRow>
             ) : (
               <TableRow>
-                <TableCell colSpan={columns.length} className="h-24 text-center text-gray_45">
+                <TableCell colSpan={columns?.length} className="h-24 text-center text-gray_45">
                   <span>هیچ آیتمی موجود نیست!</span>
                 </TableCell>
               </TableRow>

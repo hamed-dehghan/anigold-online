@@ -91,7 +91,7 @@ export const FormField = ({
                             const isValid = await trigger(name); // validate input
                             if (!isValid) return false
                             const nextIndex = currentIndex + 1;
-                            if (nextIndex < focusableElements.length) {
+                            if (nextIndex < focusableElements?.length) {
                               const nextElement = focusableElements[nextIndex] as HTMLElement;
                               nextElement.focus();
                               nextElement.click();

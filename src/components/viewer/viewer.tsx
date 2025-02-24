@@ -23,7 +23,7 @@ export const Viewer = ({
     sepratorShow = true,
 }: ViewerProps) => {
     return (
-        <div className={`flex flex-col max-w-xs md:max-w-full   ${classes.root || ""} `}>
+        <div className={`flex flex-col md:max-w-1/2 max-w-3/4 ${classes.root || ""} `}>
             {/* Header */}
             {HeaderShow && (
                 <Header
